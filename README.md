@@ -1,4 +1,4 @@
-# SFML-GUI 0.1.0
+# SFML-GUI 0.1.1
 
 SFML-GUI is a library that extends [SFML (Simple and Fast Multimedia Library)](https://www.sfml-dev.org/) to facilitate GUI creation. The library makes it easier to create graphical user interfaces in SFML applications. It provides a set of widgets that can be easily integrated, customized, and used as needed.
 

@@ -15,7 +15,7 @@ public:
 		textBox.setPosition(textX, textY);
 	}
 	
-	void create (int sizeX, int sizeY, int posX, int posY, std::string text, int fontsize, sf::Font font, bool defaultState)
+	void create (int sizeX, int sizeY, int posX, int posY, std::string text, int fontsize, sf::Font& font, bool defaultState)
 	{	
 		squareBox.setOutlineColor(sf::Color(0,0,0));
 		squareBox.setOutlineThickness(1);
@@ -30,12 +30,11 @@ public:
 		squareBox.setSize(sf::Vector2f(sizeX, sizeY));
 		squareBox.setPosition(posX, posY);
 		
-		textBox.setString(text);
 		textBox.setCharacterSize(fontsize);
 		textBox.setFillColor(sf::Color::Black);
 		textBox.setFont(font);
 
-		textAlign(sizeX);
+		changeText(text);
 	}
 	
 	void render (sf::RenderWindow& targetWindow)
@@ -67,6 +66,22 @@ public:
 		}
 	}
 
+	void setState(bool state)
+	{
+		chk_state = state;
+		switch (chk_state)
+		{
+			case false: {
+				squareBox.setFillColor(sf::Color(0,0,255));
+				break;
+			}
+			case true: {
+				squareBox.setFillColor(sf::Color(255,255,255));
+				break;
+			}
+		}
+	}
+
 	void update(sf::Vector2f mouse_pos)
 	{
 		switch (chk_state)
@@ -80,10 +95,13 @@ public:
 					if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					{
 						mouse_state = true;
-						mouse_release = true;
 
-						squareBox.setFillColor(sf::Color(0,0,255, 64));
-						changeState();
+						if (mouse_release == false)
+						{
+							mouse_release = true;
+							squareBox.setFillColor(sf::Color(0,0,255, 64));
+							changeState();	
+						}
 					}
 					else
 					{
@@ -110,10 +128,13 @@ public:
 					if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					{
 						mouse_state = true;
-						mouse_release = true;
 
-						squareBox.setFillColor(sf::Color(255,255,255, 64));
-						changeState();
+						if (mouse_release == false)
+						{
+							mouse_release = true;
+							squareBox.setFillColor(sf::Color(255,255,255, 64));
+							changeState();	
+						}	
 					}
 					else
 					{
@@ -140,7 +161,7 @@ public:
 	}
 	sf::FloatRect hitboxText()
 	{
-		return textBox.getGlobalBounds();
+		return textBox.getLocalBounds();
 	}
 	
 	bool getState()

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////
-// SFML-GUI 0.1.0
+// SFML-GUI 0.1.1
 // Copyright (C) 2024 MinecraftSRDEV
 //
 // Extension library for SFML
