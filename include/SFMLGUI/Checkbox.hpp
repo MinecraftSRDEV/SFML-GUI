@@ -42,6 +42,12 @@ public:
 		targetWindow.draw(squareBox);
 		targetWindow.draw(textBox);
 	}
+
+	void changePosition(int posX, int posY)
+	{
+		squareBox.setPosition(posX, posY);
+		textAlign(squareBox.getSize().x);
+	}
 	
 	void changeText(std::string input)
 	{
@@ -88,7 +94,7 @@ public:
 		{
 			case true:
 			{
-				if (hitbox().contains(mouse_pos) or hitboxText().contains(mouse_pos))
+				if (hitbox().contains(mouse_pos))
 				{
 					squareBox.setFillColor(sf::Color(0,0,255, 128));
 
@@ -121,7 +127,7 @@ public:
 			}
 			case false:
 			{
-				if (hitbox().contains(mouse_pos) or hitboxText().contains(mouse_pos))
+				if (hitbox().contains(mouse_pos))
 				{
 					squareBox.setFillColor(sf::Color(255,255,255, 128));
 
