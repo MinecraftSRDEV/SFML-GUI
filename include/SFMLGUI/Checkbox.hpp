@@ -1,185 +1,224 @@
-class Checkbox{
+namespace sfg
+{
+	class Checkbox{
 
-public:
+	public:
 
-	Checkbox () {}
-	
-	void textAlign(int sizeX)
-	{
-		sf::FloatRect rectangleBounds = squareBox.getGlobalBounds();
-	    sf::FloatRect textBounds = textBox.getLocalBounds();
-	
-	    float textX = rectangleBounds.left + sizeX + 5;
-	    float textY = rectangleBounds.top + (rectangleBounds.height - textBounds.height) / 2 - textBounds.top;
-		
-		textBox.setPosition(textX, textY);
-	}
-	
-	void create (int sizeX, int sizeY, int posX, int posY, std::string text, int fontsize, sf::Font& font, bool defaultState)
-	{	
-		squareBox.setOutlineColor(sf::Color(0,0,0));
-		squareBox.setOutlineThickness(1);
-		
-		if (defaultState == false) {
-			squareBox.setFillColor(sf::Color(255,255,255));
-		} else {
-			squareBox.setFillColor(sf::Color(0,0,255));
-		}
-		chk_state = defaultState;
-		
-		squareBox.setSize(sf::Vector2f(sizeX, sizeY));
-		squareBox.setPosition(posX, posY);
-		
-		textBox.setCharacterSize(fontsize);
-		textBox.setFillColor(sf::Color::Black);
-		textBox.setFont(font);
+		// bool* binded_varriable;
 
-		changeText(text);
-	}
-	
-	void render (sf::RenderWindow& targetWindow)
-	{
-		targetWindow.draw(squareBox);
-		targetWindow.draw(textBox);
-	}
-
-	void changePosition(int posX, int posY)
-	{
-		squareBox.setPosition(posX, posY);
-		textAlign(squareBox.getSize().x);
-	}
-	
-	void changeText(std::string input)
-	{
-		textBox.setString(input);
-		textAlign(squareBox.getSize().x);
-	}
-	
-	void changeState()
-	{
-		switch (chk_state)
+		Checkbox () {}
+		
+		void textAlign(int sizeX)
 		{
-			case false: {
-				chk_state = true;
-				squareBox.setFillColor(sf::Color(0,0,255));
-				break;
-			}
-			case true: {
-				chk_state = false;
-				squareBox.setFillColor(sf::Color(255,255,255));
-				break;
-			}
+			sf::FloatRect rectangleBounds = squareBox.getGlobalBounds();
+			sf::FloatRect textBounds = textBox.getLocalBounds();
+		
+			float textX = rectangleBounds.left + sizeX + 5;
+			float textY = rectangleBounds.top + (rectangleBounds.height - textBounds.height) / 2 - textBounds.top;
+			
+			textBox.setPosition(textX, textY);
 		}
-	}
 
-	void setState(bool state)
-	{
-		chk_state = state;
-		switch (chk_state)
+		void setTheme(int color)
 		{
-			case false: {
-				squareBox.setFillColor(sf::Color(0,0,255));
-				break;
+			colorSet = color;
+			squareBox.setOutlineColor(ColorPalete::Palete[color][ColorPalete::outline]);
+
+			if (chk_state == false) {
+				squareBox.setFillColor(ColorPalete::Palete[color][ColorPalete::inactive]);
+			} else {
+				squareBox.setFillColor(ColorPalete::Palete[color][ColorPalete::checkbox_inactive]);
 			}
-			case true: {
-				squareBox.setFillColor(sf::Color(255,255,255));
-				break;
-			}
+
+			textBox.setFillColor(ColorPalete::Palete[color][ColorPalete::font]);
 		}
-	}
+		
+		void create (int sizeX, int sizeY, int posX, int posY, std::string text, int fontsize, sf::Font& font, bool defaultState, int color = ColorPalete::Bright)
+		{	
+			colorSet = color;
 
-	void update(sf::Vector2f mouse_pos)
-	{
-		switch (chk_state)
+			squareBox.setOutlineThickness(1);
+			
+			chk_state = defaultState;
+
+			setTheme(color);
+			
+			squareBox.setSize(sf::Vector2f(sizeX, sizeY));
+			squareBox.setPosition(posX, posY);
+			
+			textBox.setCharacterSize(fontsize);
+			textBox.setFont(font);
+
+			changeText(text);
+		}
+		
+		void render (sf::RenderWindow& targetWindow)
 		{
-			case true:
+			targetWindow.draw(squareBox);
+			targetWindow.draw(textBox);
+		}
+
+		void changePosition(int posX, int posY)
+		{
+			squareBox.setPosition(posX, posY);
+			textAlign(squareBox.getSize().x);
+		}
+		
+		void changeText(std::string input)
+		{
+			textBox.setString(input);
+			textAlign(squareBox.getSize().x);
+		}
+		
+		void changeState()
+		{
+			switch (chk_state)
 			{
-				if (hitbox().contains(mouse_pos))
+				case false: {
+					chk_state = true;
+					// *binded_varriable = chk_state;
+					squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_inactive]);
+					break;
+				}
+				case true: {
+					chk_state = false;
+					// *binded_varriable = chk_state;
+					squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+					break;
+				}
+			}
+			if (cachedFunction != nullptr)
+			{
+				cachedFunction();	
+			}
+		}
+
+		void setState(bool state)
+		{
+			chk_state = state;
+			// *binded_varriable = chk_state;
+			switch (chk_state)
+			{
+				case false: {
+					squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_inactive]);
+					break;
+				}
+				case true: {
+					squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+					break;
+				}
+			}
+		}
+
+		void update(sf::Vector2f mouse_pos)
+		{
+			switch (chk_state)
+			{
+				case true:
 				{
-					squareBox.setFillColor(sf::Color(0,0,255, 128));
-
-					if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					if (hitbox().contains(mouse_pos))
 					{
-						mouse_state = true;
+						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_onmouse]);
 
-						if (mouse_release == false)
+						if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 						{
-							mouse_release = true;
-							squareBox.setFillColor(sf::Color(0,0,255, 64));
-							changeState();	
+							mouse_state = true;
+
+							if (mouse_release == false)
+							{
+								mouse_release = true;
+								squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_active]);
+								changeState();	
+							}
+						}
+						else
+						{
+							mouse_state = false;
+							if (mouse_release == true)
+							{
+								mouse_release = false;
+							}
 						}
 					}
 					else
 					{
+						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_inactive]);
 						mouse_state = false;
-						if (mouse_release == true)
-						{
-							mouse_release = false;
-						}
 					}
+					break;
 				}
-				else
+				case false:
 				{
-					squareBox.setFillColor(sf::Color(0,0,255, 255));
-					mouse_state = false;
-				}
-				break;
-			}
-			case false:
-			{
-				if (hitbox().contains(mouse_pos))
-				{
-					squareBox.setFillColor(sf::Color(255,255,255, 128));
-
-					if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					if (hitbox().contains(mouse_pos))
 					{
-						mouse_state = true;
+						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::onmouse]);
 
-						if (mouse_release == false)
+						if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 						{
-							mouse_release = true;
-							squareBox.setFillColor(sf::Color(255,255,255, 64));
-							changeState();	
-						}	
+							mouse_state = true;
+
+							if (mouse_release == false)
+							{
+								mouse_release = true;
+								squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::active]);
+								changeState();	
+							}	
+						}
+						else
+						{
+							mouse_state = false;
+							if (mouse_release == true)
+							{
+								mouse_release = false;
+							}
+						}
 					}
 					else
 					{
+						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
 						mouse_state = false;
-						if (mouse_release == true)
-						{
-							mouse_release = false;
-						}
 					}
+					break;
 				}
-				else
-				{
-					squareBox.setFillColor(sf::Color(255,255,255, 255));
-					mouse_state = false;
-				}
-				break;
 			}
 		}
-	}
-	
-	sf::FloatRect hitbox()
-	{
-		return squareBox.getGlobalBounds();
-	}
-	sf::FloatRect hitboxText()
-	{
-		return textBox.getLocalBounds();
-	}
-	
-	bool getState()
-	{
-		return chk_state;
-	}
 
-private:
-	sf::RectangleShape squareBox;
-	sf::Text textBox;
-	bool chk_state;
+		void setColorPalete(int palete)
+		{
+			colorSet = palete;
+		}
+		
+		sf::FloatRect hitbox()
+		{
+			return squareBox.getGlobalBounds();
+		}
+		sf::FloatRect hitboxText()
+		{
+			return textBox.getLocalBounds();
+		}
+		
+		bool getState()
+		{
+			return chk_state;
+		}
 
-	bool mouse_state = false;
-	bool mouse_release = false;
-};
+		typedef void (*FunctionType)();
+
+		void setFunction(FunctionType function)
+		{
+			cachedFunction = function;
+		}
+
+	private:
+		sf::RectangleShape squareBox;
+		sf::Text textBox;
+		bool chk_state;
+
+		int colorSet;
+
+		bool mouse_state = false;
+		bool mouse_release = false;
+
+		FunctionType cachedFunction = nullptr;
+	};
+}

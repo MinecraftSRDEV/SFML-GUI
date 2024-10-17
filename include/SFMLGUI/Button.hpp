@@ -1,221 +1,246 @@
-/**
- * Simple SFML clickable object with a one-time bound function that is executed upon clicking.
- * 
- * Use the "create" function to add button parameters.
- * 
- * To work correctly, the following functions need to be added to the main loop:
- * - render(pointer to window) for displaying on the window.
- * - update(pointer to Vector2f with mouse position) for click detection.
- * 
- * To bind a function, use setFunction(function name).
- */
-class Button {
-public:
-	Button () {}
-	
+namespace sfg
+{
 	/**
-     * Sets the text displayed on the button.
-     * 
-     * The text is automatically centered within the button.
-     * 
-     * @param inputText The string to be displayed on the button.
-     */
-	void setText(std::string inputText)
-	{
-		buttonText.setCharacterSize(24);
-		buttonText.setString(inputText);
-		allingText();
-	}
-	
-	/**
-     * Initializes the button's properties including size, position, font, and text.
-     * 
-     * @param posX X-coordinate of the button's position on the window.
-     * @param posY Y-coordinate of the button's position on the window.
-     * @param sizeX Width of the button.
-     * @param sizeY Height of the button.
-     * @param font Reference to the font used for the button text.
-     * @param input_text The text to be displayed on the button.
-     * @param block_state Optional parameter to set the button's initial blocked state (default is false).
-     */
-	void create(int posX, int posY, int sizeX, int sizeY, sf::Font& font, std::string input_text, bool block_state = false)
-	{
-		width = sizeX;
-		height = sizeY;
+	 * Simple SFML clickable object with a one-time bound function that is executed upon clicking.
+	 * 
+	 * Use the "create" function to add button parameters.
+	 * 
+	 * To work correctly, the following functions need to be added to the main loop:
+	 * - render(pointer to window) for displaying on the window.
+	 * - update(pointer to Vector2f with mouse position) for click detection.
+	 * 
+	 * To bind a function, use setFunction(function name).
+	 */
+	class Button {
+	public:
+		Button () {}
 		
-		button.setOutlineColor(sf::Color::Black);
-		button.setOutlineThickness(1);
-		
-		button.setFillColor(sf::Color(255,255,255));
-		
-		button.setSize(sf::Vector2f(sizeX, sizeY));
-		button.setPosition(posX, posY);
-		
-		buttonText.setFont(font);
-		buttonText.setFillColor(sf::Color::Black);
-		setText(input_text);
-
-		blocked = block_state;
-	}
-
-	/**
-     * Changes the position of the button.
-     * 
-     * This function updates the button's position on the window.
-     * 
-     * @param posX New X-coordinate of the button's position.
-     * @param posY New Y-coordinate of the button's position.
-     * 
-     * Accepts only constant variables.
-     */
-	void changePosition(int posX, int posY)
-	{
-		button.setPosition(posX, posY);
-		allingText();
-	}
-	
-	/**
-     * Renders the button and its text onto the given window.
-     * 
-     * This function should be called in the main rendering loop to display the button.
-     * 
-     * @param targetWindow The SFML window where the button will be drawn.
-     */
-	void render(sf::RenderWindow& targetWindow)
-	{
-		targetWindow.draw(button);
-		targetWindow.draw(buttonText);
-	}
-
-	/**
-     * Updates the button's state based on mouse position and interaction.
-     * 
-     * This function detects mouse interactions, changes the button's appearance when hovered,
-     * and calls the bound function when clicked.
-     * 
-     * @param mouse_pos Current position of the mouse cursor as a vector.
-     */
-	void update(sf::Vector2f mouse_pos)
-	{
-		if (blocked == false)
+		/**
+		 * Sets the text displayed on the button.
+		 * 
+		 * The text is automatically centered within the button.
+		 * 
+		 * @param inputText The string to be displayed on the button.
+		 */
+		void setText(std::string inputText)
 		{
-			if (hitbox().contains(mouse_pos))
+			buttonText.setCharacterSize(24);
+			buttonText.setString(inputText);
+			allingText();
+		}
+		
+		/**
+		 * Initializes the button's properties including size, position, font, and text.
+		 * 
+		 * @param posX X-coordinate of the button's position on the window.
+		 * @param posY Y-coordinate of the button's position on the window.
+		 * @param sizeX Width of the button.
+		 * @param sizeY Height of the button.
+		 * @param font Reference to the font used for the button text.
+		 * @param input_text The text to be displayed on the button.
+		 * @param block_state Optional parameter to set the button's initial blocked state (default is false).
+		 */
+		void create(int posX, int posY, int sizeX, int sizeY, sf::Font& font, std::string input_text, bool block_state = false, int color = ColorPalete::Bright)
+		{
+			width = sizeX;
+			height = sizeY;
+
+			colorSet = color;
+			
+			button.setOutlineThickness(1);
+			button.setSize(sf::Vector2f(sizeX, sizeY));
+			button.setPosition(posX, posY);
+			
+			buttonText.setFont(font);
+			
+			setText(input_text);
+
+			blocked = block_state;
+
+			setTheme(colorSet);
+		}
+
+		/**
+		 * Changes the position of the button.
+		 * 
+		 * This function updates the button's position on the window.
+		 * 
+		 * @param posX New X-coordinate of the button's position.
+		 * @param posY New Y-coordinate of the button's position.
+		 * 
+		 * Accepts only constant variables.
+		 */
+		void changePosition(int posX, int posY)
+		{
+			button.setPosition(posX, posY);
+			allingText();
+		}
+		
+		/**
+		 * Renders the button and its text onto the given window.
+		 * 
+		 * This function should be called in the main rendering loop to display the button.
+		 * 
+		 * @param targetWindow The SFML window where the button will be drawn.
+		 */
+		void render(sf::RenderWindow& targetWindow)
+		{
+			targetWindow.draw(button);
+			targetWindow.draw(buttonText);
+		}
+
+		void setTheme(int color)
+		{
+			colorSet = color;
+			button.setOutlineColor(ColorPalete::Palete[color][ColorPalete::outline]);
+			button.setFillColor(ColorPalete::Palete[color][ColorPalete::inactive]);
+			buttonText.setFillColor(ColorPalete::Palete[color][ColorPalete::font]);
+		}
+
+		/**
+		 * Updates the button's state based on mouse position and interaction.
+		 * 
+		 * This function detects mouse interactions, changes the button's appearance when hovered,
+		 * and calls the bound function when clicked.
+		 * 
+		 * @param mouse_pos Current position of the mouse cursor as a vector.
+		 */
+		void update(sf::Vector2f& mouse_pos)
+		{
+			if (blocked == false)
 			{
-				button.setFillColor(sf::Color(255,255,255, 128));
-
-				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+				if (hitbox().contains(mouse_pos))
 				{
-					mouse_state = true;
-					mouse_release = true;
+					button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::onmouse]);
 
-					button.setFillColor(sf::Color(255,255,255, 64));
-				}
-				else
-				{
-					mouse_state = false;
-					if (mouse_release == true)
+					if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					{
-						mouse_release = false;
+						mouse_state = true;
+						mouse_release = true;
 
-						if (cachedFunction)
+						button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::active]);
+					}
+					else
+					{
+						mouse_state = false;
+						if (mouse_release == true)
 						{
-							cachedFunction();
+							mouse_release = false;
+
+							if (cachedFunction)
+							{
+								cachedFunction();
+							}
 						}
 					}
 				}
+				else
+				{
+					button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+					mouse_state = false;
+				}	
 			}
 			else
 			{
-				button.setFillColor(sf::Color(255,255,255, 255));
-				mouse_state = false;
-			}	
+				button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::blocked]);
+			}
 		}
-		else
+		
+		/**
+		 * Returns the button's hitbox as a rectangle.
+		 * 
+		 * This is used for detecting mouse interactions with the button.
+		 * 
+		 * @return A FloatRect representing the button's bounding box.
+		 */
+		sf::FloatRect hitbox()
 		{
-			button.setFillColor(sf::Color(176,176,176));
+			return button.getGlobalBounds();
 		}
-	}
-	
-	/**
-     * Returns the button's hitbox as a rectangle.
-     * 
-     * This is used for detecting mouse interactions with the button.
-     * 
-     * @return A FloatRect representing the button's bounding box.
-     */
-	sf::FloatRect hitbox()
-	{
-		return button.getGlobalBounds();
-	}
-	
-	/**
-     * Retrieves the current position of the button.
-     * 
-     * @return A Vector2f representing the button's position in the window.
-     */
-	sf::Vector2f getPosition()
-	{
-		return button.getPosition();
-	}
+		
+		/**
+		 * Retrieves the current position of the button.
+		 * 
+		 * @return A Vector2f representing the button's position in the window.
+		 */
+		sf::Vector2f getPosition()
+		{
+			return button.getPosition();
+		}
 
-	typedef void (*FunctionType)();
+		typedef void (*FunctionType)();
 
-	/**
-     * Sets the function to be called when the button is clicked.
-     * 
-     * This function binds a user-defined function to the button's click event.
-     * 
-     * @param function A pointer to the function to be executed on button click.
-     */
-	void setFunction(FunctionType function)
-	{
-		cachedFunction = function;
-	}
+		/**
+		 * Sets the function to be called when the button is clicked.
+		 * 
+		 * This function binds a user-defined function to the button's click event.
+		 * 
+		 * @param function A pointer to the function to be executed on button click.
+		 */
+		void setFunction(FunctionType function)
+		{
+			cachedFunction = function;
+		}
 
-	/**
-     * Sets the blocked state of the button.
-     * 
-     * When blocked, the button does not respond to mouse interactions.
-     * 
-     * @param state The new blocked state of the button (true or false).
-     */
-	void setBlockState(bool state)
-	{
-		blocked = state;
-	}
-	
-private:
+		/**
+		 * Sets the blocked state of the button.
+		 * 
+		 * When blocked, the button does not respond to mouse interactions.
+		 * 
+		 * @param state The new blocked state of the button (true or false).
+		 */
+		void setBlockState(bool state)
+		{
+			blocked = state;
+		}
 
-	/**
-     * Centers the text within the button.
-     * 
-     * This method adjusts the scale and position of the text to ensure
-     * it is displayed in the center of the button.
-     */
-	void allingText()
-	{
-		float scaleX = (width - 20) / buttonText.getLocalBounds().width;
-        float scaleY = (height - 20) / buttonText.getLocalBounds().height;
-        float scale = std::min(scaleX, scaleY);
-        buttonText.setScale(scale, scale);
+		void setCashString(const std::string& str)
+		{
+			cashed_string = str;
+		}
 
-        sf::FloatRect textRect = buttonText.getLocalBounds();
-        buttonText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+		void setColorPalete(int palete)
+		{
+			colorSet = palete;
+		}
+		
+	private:
 
-        float posX = button.getPosition().x + width / 2.0f;
-        float posY = button.getPosition().y + height / 2.0f;
-        buttonText.setPosition(posX, posY);
-	}
+		/**
+		 * Centers the text within the button.
+		 * 
+		 * This method adjusts the scale and position of the text to ensure
+		 * it is displayed in the center of the button.
+		 */
+		void allingText()
+		{
+			float scaleX = (width - 20) / buttonText.getLocalBounds().width;
+			float scaleY = (height - 20) / buttonText.getLocalBounds().height;
+			float scale = std::min(scaleX, scaleY);
+			buttonText.setScale(scale, scale);
 
-	sf::RectangleShape button;
-	sf::Text buttonText;
-	int width;
-	int height;
+			sf::FloatRect textRect = buttonText.getLocalBounds();
+			buttonText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 
-	bool mouse_state = false;
-	bool mouse_release = false;
+			float posX = button.getPosition().x + width / 2.0f;
+			float posY = button.getPosition().y + height / 2.0f;
+			buttonText.setPosition(posX, posY);
+		}
 
-	bool blocked = false;
+		sf::RectangleShape button;
+		sf::Text buttonText;
+		int width;
+		int height;
 
-	FunctionType cachedFunction = nullptr;
-};
+		int colorSet;
+
+		bool mouse_state = false;
+		bool mouse_release = false;
+
+		bool blocked = false;
+
+		std::string cashed_string;
+
+		FunctionType cachedFunction = nullptr;
+	};
+}
