@@ -18,6 +18,8 @@ namespace sfg
 			
 			options_list[optionText] = option;
 			results_list[optionText] = result;
+
+			options_added.emplace_back(optionText, result);
 		}
 		
 		/**
@@ -42,7 +44,7 @@ namespace sfg
 		{
 			for (const auto& pair : options) {
 				addOption(pair.first, pair.second);
-				options_list[pair.first].setPosition(posX_global, posY_global += sizeY_global);
+				options_list[pair.first].setPosition(posX_global, lastY += sizeY_global);
 			}
 		}
 
@@ -73,12 +75,10 @@ namespace sfg
 		void create(int sizeX, int sizeY, int posX, int posY, std::map <std::string, std::string>options, std::string default_selected, sf::Font& font, bool block_state = false, int color = ColorPalete::Bright)
 		{
 			colorSet = color;
-			setTheme(color);
-
-			genTexture("Drop", 20, sizeY, "Drop", texturesMap);
-			dropButton.setTexture(texturesMap["Drop"]);
 
 			defaultFont = font;
+
+			defaultOption = default_selected;
 			
 			int posY2 = posY;
 			selectedOpiton.setPosition(posX, posY2);
@@ -87,7 +87,10 @@ namespace sfg
 			sizeY_global = sizeY;
 			posX_global = posX;
 			posY_global = posY;
+			lastY = posY_global;
 			add_options(options);
+
+			setTheme(color);
 			
 			selectedOpiton.setTexture(*options_list[default_selected].getTexture());
 			
@@ -99,6 +102,19 @@ namespace sfg
 		void setTheme(int color)
 		{
 			colorSet = color;
+			lastY = posY_global;
+
+			genTexture("\\/", 20, sizeY_global, "Drop", texturesMap);
+			dropButton.setTexture(texturesMap["Drop"]);
+
+			std::vector <std::pair <std::string, std::string>> options_added_temp = options_added;
+			options_added.clear();
+			for (const auto& pair : options_added_temp)
+			{
+				std::map <std::string, std::string> tempmap;
+				tempmap[pair.first] = pair.second;
+				add_options(tempmap);
+			}
 		}
 		
 		/**
@@ -158,6 +174,8 @@ namespace sfg
 		 */
 		void update(sf::Vector2f& mouse)
 		{
+			options_list.erase("");
+
 			if (blocked == false)
 			{
 				if (dropHitbox().contains(mouse))
@@ -184,7 +202,7 @@ namespace sfg
 				}
 				else
 				{
-					dropButton.setColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+					dropButton.setColor(sf::Color(255,255,255));
 					mouse_state = false;
 				}
 
@@ -212,7 +230,7 @@ namespace sfg
 				}
 				else
 				{
-					selectedOpiton.setColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+					selectedOpiton.setColor(sf::Color(255,255,255));
 					mouse_state = false;
 				}
 
@@ -220,7 +238,7 @@ namespace sfg
 				{
 					for (const auto& pair : options_list)
 					{
-						options_list[pair.first].setColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+						options_list[pair.first].setColor(sf::Color(255,255,255));
 					}
 
 					std::string sprite_under_mouse = getSpriteUnderMouse(mouse);
@@ -253,7 +271,7 @@ namespace sfg
 					}
 					else
 					{
-						options_list[sprite_under_mouse].setColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+						options_list[sprite_under_mouse].setColor(sf::Color(255,255,255));
 						mouse_state = false;
 					}
 				}	
@@ -280,12 +298,12 @@ namespace sfg
 
 				if (mouse_scroll > 0)
 				{
-					auto firstElement = options_list.begin();
+					auto firstElement = options_added.begin();
 					firstKey = firstElement->first;
 					int mp = event.mouseWheel.delta;
                     while (mp > 0)
                     {
-						if (options_list[firstKey].getPosition().y + selectedOpiton.getPosition().y + sizeY_global < selectedOpiton.getPosition().y)
+						if (options_list[firstKey].getPosition().y < selectedOpiton.getPosition().y + sizeY_global)
 						{
 							for (const auto& pair : options_list)
 							{
@@ -297,7 +315,7 @@ namespace sfg
 				}
 				else
 				{
-					auto lastElement = std::prev(options_list.end());
+					auto lastElement = std::prev(options_added.end());
 					int mp = event.mouseWheel.delta;
                     while (mp < 0)
                     {
@@ -435,10 +453,8 @@ namespace sfg
 				return;
 			}
 
-			renderTexture.clear(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
-
 			sf::RectangleShape border(sf::Vector2f(width - 2, height - 2));
-			border.setFillColor(sf::Color::Transparent);
+			border.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
 			border.setOutlineThickness(1);
 			border.setOutlineColor(ColorPalete::Palete[colorSet][ColorPalete::outline]);
 			border.setPosition(1, 1);
@@ -464,6 +480,12 @@ namespace sfg
 			sfmlText.setStyle(sf::Text::Regular);
 			sfmlText.setScale(scale, scale);
 
+			if (key == "Drop")
+			{
+				sfmlText.setScale(1.0f, 1.0f);
+				sfmlText.setPosition(10, 17);
+			}
+
 			renderTexture.draw(sfmlText);
 
 			renderTexture.display();
@@ -472,30 +494,33 @@ namespace sfg
 			texturesMap[key] = texture;
 		}
 
-		std::map <std::string, sf::Sprite> options_list;	// Stores the sprites for each option
-		std::map <std::string, std::string> results_list;	// Maps option text to result strings
-		std::map <std::string, sf::Texture>texturesMap;		// Stores the textures for each option
-		sf::Sprite dropButton;								// Sprite for the drop button
-		sf::Sprite selectedOpiton;							// Sprite for the currently selected option
-		sf::Sprite option;									// Temporary sprite for adding options
-		sf::Texture outputTexture;							// Temporary texture (unused in this code)
-		bool dropped = false;								// Indicates if the dropdown list is currently open
+		std::map <std::string, sf::Sprite> options_list;
+		std::map <std::string, std::string> results_list;
+		std::map <std::string, sf::Texture>texturesMap;
+		std::vector <std::pair <std::string, std::string>> options_added;
+		sf::Sprite dropButton;
+		sf::Sprite selectedOpiton;
+		sf::Sprite option;
+		sf::Texture outputTexture;
+		bool dropped = false;
 
-		std::string selected_option;						// Stores the currently selected option text
-		std::string firstKey;								// Stores the key of the first option
+		std::string selected_option;
+		std::string defaultOption;
+		std::string firstKey;
 
-		bool mouse_state = false;							// Tracks the current mouse button state
-		bool mouse_release = false;							// Tracks if the mouse button was released
+		bool mouse_state = false;
+		bool mouse_release = false;
 
-		bool blocked = false;								// Indicates if the dropdown list is blocked
+		bool blocked = false;
 
-		sf::Font defaultFont;								// The font used for rendering text
+		sf::Font defaultFont;
 		
-		int sizeX_global;									// Width of the dropdown list
-		int sizeY_global;									// Height of each option
+		int sizeX_global;
+		int sizeY_global;
 
-		int posX_global;									// X position of the dropdown list
-		int posY_global;									// Y position of the dropdown list
+		int posX_global;
+		int posY_global;
+		int lastY;
 
 		int colorSet;
 

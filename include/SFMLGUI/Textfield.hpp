@@ -166,6 +166,22 @@ namespace sfg
             textContent.clear();
         }
 
+        void toDown()
+        {
+            for (auto last = std::prev(textContent.end()); last->getPosition().y > (y_global + background.getGlobalBounds().height - 20);)
+            {
+                scrollDown();
+            }
+        }
+
+        void toUp()
+        {
+            for (auto first = textContent.begin(); first->getPosition().y < y_global + 10;)
+            {
+                scorllUp();
+            }
+        }
+
         private:
 
         void scrollDown()

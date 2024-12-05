@@ -24,9 +24,7 @@ namespace sfg
 		 */
 		void setText(std::string inputText)
 		{
-			buttonText.setCharacterSize(24);
-			buttonText.setString(inputText);
-			allingText();
+			labelText.setAttributes(24, inputText);
 		}
 		
 		/**
@@ -42,22 +40,23 @@ namespace sfg
 		 */
 		void create(int posX, int posY, int sizeX, int sizeY, sf::Font& font, std::string input_text, bool block_state = false, int color = ColorPalete::Bright)
 		{
-			width = sizeX;
-			height = sizeY;
+			body.init();
 
-			colorSet = color;
+			body.colorSet = color;
+
+			body.setAttributes(sf::Vector2f(posX, posY), sf::Vector2f(sizeX, sizeY));
+
+			labelText.init(body);
 			
-			button.setOutlineThickness(1);
-			button.setSize(sf::Vector2f(sizeX, sizeY));
-			button.setPosition(posX, posY);
-			
-			buttonText.setFont(font);
+			labelText.setFont(font);
 			
 			setText(input_text);
 
-			blocked = block_state;
+			setBlockState(block_state);
 
-			setTheme(colorSet);
+			setTheme(body.colorSet);
+
+			clickEvent.init(body);
 		}
 
 		/**
@@ -72,8 +71,8 @@ namespace sfg
 		 */
 		void changePosition(int posX, int posY)
 		{
-			button.setPosition(posX, posY);
-			allingText();
+			body.setAttributes(sf::Vector2f(posX, posY), sf::Vector2f(body.getPointer().getGlobalBounds().width, body.getPointer().getGlobalBounds().height));
+			labelText.allignText();
 		}
 		
 		/**
@@ -85,16 +84,14 @@ namespace sfg
 		 */
 		void render(sf::RenderWindow& targetWindow)
 		{
-			targetWindow.draw(button);
-			targetWindow.draw(buttonText);
+			body.render(targetWindow);
+			labelText.render(targetWindow);
 		}
 
 		void setTheme(int color)
 		{
-			colorSet = color;
-			button.setOutlineColor(ColorPalete::Palete[color][ColorPalete::outline]);
-			button.setFillColor(ColorPalete::Palete[color][ColorPalete::inactive]);
-			buttonText.setFillColor(ColorPalete::Palete[color][ColorPalete::font]);
+			body.setColor(color);
+			labelText.setColor(color);
 		}
 
 		/**
@@ -109,46 +106,7 @@ namespace sfg
 		 */
 		int update(sf::Vector2f& mouse_pos)
 		{
-			if (blocked == false)
-			{
-				if (hitbox().contains(mouse_pos))
-				{
-					button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::onmouse]);
-
-					if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-					{
-						mouse_state = true;
-						mouse_release = true;
-
-						button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::active]);
-						return sfgComponents::States::onMouse;
-					}
-					else
-					{
-						mouse_state = false;
-						if (mouse_release == true)
-						{
-							mouse_release = false;
-
-							if (cachedFunction)
-							{
-								cachedFunction();
-							}
-							return sfgComponents::States::isMouseClicked;
-						}
-					}
-				}
-				else
-				{
-					button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
-					mouse_state = false;
-				}	
-			}
-			else
-			{
-				button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::blocked]);
-			}
-			return sfgComponents::States::noMouse;
+			return clickEvent.update(mouse_pos);
 		}
 		
 		/**
@@ -160,7 +118,7 @@ namespace sfg
 		 */
 		sf::FloatRect hitbox()
 		{
-			return button.getGlobalBounds();
+			return body.getPointer().getGlobalBounds();
 		}
 		
 		/**
@@ -170,10 +128,8 @@ namespace sfg
 		 */
 		sf::Vector2f getPosition()
 		{
-			return button.getPosition();
+			return body.getPointer().getPosition();
 		}
-
-		typedef void (*FunctionType)();
 
 		/**
 		 * Sets the function to be called when the button is clicked.
@@ -182,9 +138,9 @@ namespace sfg
 		 * 
 		 * @param function A pointer to the function to be executed on button click.
 		 */
-		void setFunction(FunctionType function)
+		void setFunction(sfgComponents::ButtonClickEvent::FunctionType function)
 		{
-			cachedFunction = function;
+			clickEvent.bindFunction(function);
 		}
 
 		/**
@@ -196,57 +152,12 @@ namespace sfg
 		 */
 		void setBlockState(bool state)
 		{
-			blocked = state;
-			button.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::blocked]);
-		}
-
-		void setCashString(const std::string& str)
-		{
-			cashed_string = str;
-		}
-
-		void setColorPalete(int palete)
-		{
-			colorSet = palete;
+			clickEvent.setBlockState(state);
 		}
 		
 	private:
-
-		/**
-		 * Centers the text within the button.
-		 * 
-		 * This method adjusts the scale and position of the text to ensure
-		 * it is displayed in the center of the button.
-		 */
-		void allingText()
-		{
-			float scaleX = (width - 20) / buttonText.getLocalBounds().width;
-			float scaleY = (height - 20) / buttonText.getLocalBounds().height;
-			float scale = std::min(scaleX, scaleY);
-			buttonText.setScale(scale, scale);
-
-			sf::FloatRect textRect = buttonText.getLocalBounds();
-			buttonText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-
-			float posX = button.getPosition().x + width / 2.0f;
-			float posY = button.getPosition().y + height / 2.0f;
-			buttonText.setPosition(posX, posY);
-		}
-
-		sf::RectangleShape button;
-		sf::Text buttonText;
-		int width;
-		int height;
-
-		int colorSet;
-
-		bool mouse_state = false;
-		bool mouse_release = false;
-
-		bool blocked = false;
-
-		std::string cashed_string;
-
-		FunctionType cachedFunction = nullptr;
+		sfgComponents::ButtonBody body;
+		sfgComponents::ButtonClickEvent clickEvent;
+		sfgComponents::ButtonLabelText labelText;
 	};
 }
