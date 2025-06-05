@@ -14,14 +14,18 @@ namespace sfg
          * @param active_value Initial active state of the textbox.
          * @param cursorVisible_value Initial visibility state of the cursor.
          * @param font The font used for the text.
-         * @param fontSize The size of the font.
+         * @param font_Size The size of the font.
          * @param defaultText The default text displayed in the textbox.
          * @param readonly_default Initial read-only state.
          * @param label_text Text to be used as the label for the textbox.
          */
-        void create(int x, int y, int size_x, int size_y, bool active_value, bool cursorVisible_value, sf::Font& font, int fontSize, std::string defaultText = "", bool readonly_default = false, std::string label_text = "", int color = ColorPalete::Bright)
+        void create(int x, int y, int size_x, int size_y, bool active_value, bool cursorVisible_value, sf::Font& font, int font_Size, std::string defaultText = "", bool readonly_default = false, std::string label_text = "", int color = ColorPalete::Bright)
         {
             colorSet = color;
+
+            xPos = x;
+            yPos = y;
+            fontSize = font_Size;
 
             background.setSize(sf::Vector2f(size_x, size_y));
             backgroundSize = background.getSize();
@@ -38,17 +42,7 @@ namespace sfg
 
             labelText.setFont(font);
             labelText.setCharacterSize(fontSize);
-            labelText.setString(label_text);
-            labelText.setPosition(x + (background.getGlobalBounds().width / 2) - (labelText.getLocalBounds().width / 2), y);
-            
-            if (label_text == "")
-            {
-                background.setPosition(x, y);
-            }
-            else
-            {
-                background.setPosition(x, y + fontSize + 5);
-            }
+            setLabelText(label_text);
             
             updateTextPosition();
 
@@ -76,6 +70,8 @@ namespace sfg
          * @param position A vector representing the new position of the textbox.
          */
         void setPosition(sf::Vector2f position) {
+            xPos = position.x;
+            yPos = position.y;
             background.setPosition(position);
             updateTextPosition();
         }
@@ -240,7 +236,20 @@ namespace sfg
             }
         }
 
-        
+        void setLabelText(const std::string& label_text)
+        {
+            labelText.setString(label_text);
+            labelText.setPosition(xPos + (background.getGlobalBounds().width / 2) - (labelText.getLocalBounds().width / 2), yPos);
+            
+            if (label_text == "")
+            {
+                background.setPosition(xPos, yPos);
+            }
+            else
+            {
+                background.setPosition(xPos, yPos + fontSize + 5);
+            }
+        }
 
         /**
          * Gets the current text entered in the textbox.
@@ -287,7 +296,7 @@ namespace sfg
                 onChange_clock.restart();
                 onchange_runned = false;
             }
-            catch (std::bad_alloc)
+            catch (std::exception e)
             {
                 character_position++;
             }
@@ -311,6 +320,10 @@ namespace sfg
         sf::Time onChantge_detectTime = sf::seconds(2);
         sf::Clock onChange_clock;
         bool onchange_runned = true;
+
+        int xPos;
+        int yPos;
+        int fontSize;
 
         FunctionType cachedFunction = nullptr;
     };    

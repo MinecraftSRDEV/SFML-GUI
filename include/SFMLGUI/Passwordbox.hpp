@@ -23,7 +23,12 @@ namespace sfg
         {
             colorSet = color;
 
-            background.setSize(sf::Vector2f(size_x, size_y));
+            if (size_x < 50)
+            {
+                size_x = 50;
+            }
+
+            background.setSize(sf::Vector2f((size_x - 50), size_y));
             backgroundSize = background.getSize();
             background.setOutlineThickness(1);
 
@@ -52,8 +57,12 @@ namespace sfg
             {
                 background.setPosition(x, y + fontSize + 5);
             }
+
+            showPasswordButton.create(0, 0, 50, size_y, font, "Show", false, color);
             
             updateTextPosition();
+
+            showPasswordButton.changePosition(background.getPosition().x + background.getGlobalBounds().width, background.getPosition().y);
 
             read_only = readonly_default;
             setReadOnlyMode(read_only);
@@ -70,6 +79,7 @@ namespace sfg
             cursor.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::font]);
             labelText.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::font]);
             invisibleText.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::font]);
+            showPasswordButton.setTheme(colorSet);
         }
 
         /**
@@ -79,6 +89,7 @@ namespace sfg
          */
         void setPosition(sf::Vector2f position) {
             background.setPosition(position);
+            showPasswordButton.changePosition(background.getPosition().x + background.getGlobalBounds().width, background.getPosition().y);
             updateTextPosition();
         }
 
@@ -202,6 +213,8 @@ namespace sfg
                     onchange_runned = true;
                 }
             }
+
+            showPassword = showPasswordButton.update(mouse);
         }
 
         /**
@@ -212,16 +225,25 @@ namespace sfg
         void render(sf::RenderWindow& window) {
             window.draw(labelText);
             window.draw(background);
-            window.draw(invisibleText);
-            // window.draw(text);
 
-            if (active && cursorVisible) {
+            if (showPassword == sfgComponents::States::noMouse)
+            {
+                window.draw(invisibleText);
+            }
+            else if (showPassword == sfgComponents::States::onMouse)
+            {
+                window.draw(text);    
+            }
+
+            if (active && cursorVisible && showPassword == sfgComponents::States::noMouse) {
                 if (read_only == false)
                 {
                     window.draw(cursor);
                 }
                 
             }
+
+            showPasswordButton.render(window);
         }
 
         /**
@@ -299,7 +321,7 @@ namespace sfg
                 onChange_clock.restart();
                 onchange_runned = false;   
             }
-            catch (std::bad_alloc)
+            catch (std::exception e)
             {
                 character_position++;
             }
@@ -316,6 +338,7 @@ namespace sfg
         bool active;
         bool cursorVisible;
         bool read_only;
+        bool showPassword = false;
         int character_position = 0;
         int colorSet;
         sf::Clock cursorClock;
@@ -324,6 +347,8 @@ namespace sfg
         sf::Time onChantge_detectTime = sf::seconds(2);
         sf::Clock onChange_clock;
         bool onchange_runned = true;
+
+        Button showPasswordButton;
 
         FunctionType cachedFunction = nullptr;
     };    

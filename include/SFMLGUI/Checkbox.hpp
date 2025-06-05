@@ -4,8 +4,6 @@ namespace sfg
 
 	public:
 
-		// bool* binded_varriable;
-
 		Checkbox () {}
 		
 		void textAlign(int sizeX)
@@ -110,77 +108,89 @@ namespace sfg
 			}
 		}
 
-		void update(sf::Vector2f mouse_pos)
+		int update(sf::Vector2f mouse_pos)
 		{
-			switch (chk_state)
+			if (blocked == false)
 			{
-				case true:
+				switch (chk_state)
 				{
-					if (hitbox().contains(mouse_pos))
+					case true:
 					{
-						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_onmouse]);
-
-						if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+						if (hitbox().contains(mouse_pos))
 						{
-							mouse_state = true;
+							squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_onmouse]);
 
-							if (mouse_release == false)
+							if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 							{
-								mouse_release = true;
-								squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_active]);
-								changeState();	
+								mouse_state = true;
+
+								if (mouse_release == false)
+								{
+									mouse_release = true;
+									squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_active]);
+									changeState();
+									return sfgComponents::States::isMouseClicked;
+								}
+								return sfgComponents::States::onMouse;
+							}
+							else
+							{
+								mouse_state = false;
+								if (mouse_release == true)
+								{
+									mouse_release = false;
+								}
 							}
 						}
 						else
 						{
+							squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_inactive]);
 							mouse_state = false;
-							if (mouse_release == true)
-							{
-								mouse_release = false;
-							}
 						}
+						break;
 					}
-					else
+					case false:
 					{
-						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::checkbox_inactive]);
-						mouse_state = false;
-					}
-					break;
-				}
-				case false:
-				{
-					if (hitbox().contains(mouse_pos))
-					{
-						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::onmouse]);
-
-						if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+						if (hitbox().contains(mouse_pos))
 						{
-							mouse_state = true;
+							squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::onmouse]);
 
-							if (mouse_release == false)
+							if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 							{
-								mouse_release = true;
-								squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::active]);
-								changeState();	
-							}	
+								mouse_state = true;
+
+								if (mouse_release == false)
+								{
+									mouse_release = true;
+									squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::active]);
+									changeState();
+									return sfgComponents::States::isMouseClicked;
+								}	
+								return sfgComponents::States::onMouse;
+							}
+							else
+							{
+								mouse_state = false;
+								if (mouse_release == true)
+								{
+									mouse_release = false;
+								}
+							}
 						}
 						else
 						{
+							squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
 							mouse_state = false;
-							if (mouse_release == true)
-							{
-								mouse_release = false;
-							}
 						}
+						break;
 					}
-					else
-					{
-						squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
-						mouse_state = false;
-					}
-					break;
-				}
+				}	
 			}
+			else
+			{
+				squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::inactive]);
+			}
+			return sfgComponents::States::noMouse;
 		}
 
 		void setColorPalete(int palete)
@@ -209,6 +219,12 @@ namespace sfg
 			cachedFunction = function;
 		}
 
+		void setBlockState(bool state)
+		{
+			blocked = state;
+			squareBox.setFillColor(ColorPalete::Palete[colorSet][ColorPalete::blocked]);
+		}
+
 	private:
 		sf::RectangleShape squareBox;
 		sf::Text textBox;
@@ -218,6 +234,8 @@ namespace sfg
 
 		bool mouse_state = false;
 		bool mouse_release = false;
+
+		bool blocked = false;
 
 		FunctionType cachedFunction = nullptr;
 	};
